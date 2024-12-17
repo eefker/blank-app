@@ -9,6 +9,9 @@ from ipywidgets import interact
 import numpy as np
 import streamlit_option_menu
 from streamlit_option_menu import option_menu
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.metrics import mean_squared_error, accuracy_score, roc_auc_score
 
 with st.sidebar:
     selected = option_menu(
@@ -38,12 +41,14 @@ if selected == "Introduction":
     st.write("The dataset was provided for teaching purpose and was provided with permission from the National Heart, Lung and Blood Institute (NHLBI) (No. N01-HC-25195)")
     st.image("https://avatars.githubusercontent.com/u/4061889?s=280&v=4", width=100)
     st.write("reference: Hong Y. Framingham Heart Study (FHS) | National Heart, Lung, and Blood Institute (NHLBI) [Internet]. Nih.gov. 2018. Available from: https://www.nhlbi.nih.gov/science/framingham-heart-study-fhs")
-
+    st.write("")
+    st.write("")
 
     # Research question
     st.subheader("Research Question")
     st.write("Does Body Mass Index (BMI) influence the prevalence of coronary heart disease (CHD)?")
-
+    st.write("")
+    st.write("")
     # Quiz Section
     st.subheader("Quiz: Correlation between BMI and CHD")
     st.write("Answer the following questions to test your knowledge:")
@@ -605,7 +610,7 @@ if selected == "Describe and Visualize the data":
 
 
 if selected == "Data Analysis":
-    st.title("Describe and Visualize the data")
+    st.title("Data Analysis")
     # Corrected URL for the raw CSV file
     url = 'https://raw.githubusercontent.com/LUCE-Blockchain/Databases-for-teaching/main/Framingham%20Dataset.csv'
     #allow all the columns to be visible
@@ -639,8 +644,9 @@ if selected == "Data Analysis":
     df_rqi = df_imputed.copy()
     df_rqi[selected_columns] = imputer.fit_transform(df_rqi[selected_columns])
 
+    st.write("To see our beautiful models, please go to our colab: https://colab.research.google.com/drive/11cERXt_L250MdmUoxWQyCnJChGUprV4Z?usp=sharing")
     # Feature Engineering
-    # Binary encoding for SEX (1 = Male, 2 = Female -> 0 = Female, 1 = Male)
+    #Binary encoding for SEX (1 = Male, 2 = Female -> 0 = Female, 1 = Male)
     df_rqi['SEX_BINARY'] = df_rqi['SEX'].apply(lambda x: 1 if x == 1 else 0)
 
     # BMI Categorization
@@ -771,7 +777,7 @@ if selected == "Data Analysis":
 
 
 if selected == "Conclusion":
-    st.title("Describe and Visualize the data")
+    st.title("Conclusion")
     # Corrected URL for the raw CSV file
     url = 'https://raw.githubusercontent.com/LUCE-Blockchain/Databases-for-teaching/main/Framingham%20Dataset.csv'
     #allow all the columns to be visible
@@ -804,8 +810,13 @@ if selected == "Conclusion":
     imputer = KNNImputer(n_neighbors=3)
     df_rqi = df_imputed.copy()
     df_rqi[selected_columns] = imputer.fit_transform(df_rqi[selected_columns])
-
-    
+    st.write("The research sought to determine whether Body Mass Index (BMI) influences the prevalence of coronary heart disease (CHD), using data from the Framingham Heart Study.")
+    st.write("After cleaning and preprocessing the dataset to handle missing values and categorical variables, the features were separated from the target variable, with BMI identified as a key predictor of CHD prevalence.")
+    st.write("Several machine learning models were implemented, including Support Vector Machine (SVM), Decision Tree, Random Forest, K-Nearest Neighbors (KNN), and a simple Neural Network. Each model was trained and tested using an 80-20 stratified data split to ensure balanced representation.")
+    st.write("To evaluate the models, metrics such as accuracy, precision, recall, F1-score, and confusion matrices were computed. The results showed that Random Forest and the Neural Network models outperformed others in terms of overall accuracy and F1-score, suggesting they captured the relationship between BMI and CHD prevalence most effectively.")
+    st.write("Random Forest revealed BMI as a strong predictor, supported by feature importance analysis, while the Neural Network demonstrated the ability to detect complex patterns in the data. Both models highlighted the significant role of higher BMI categories, such as Obese, in predicting CHD prevalence.")
+    st.write("The analysis confirmed a measurable association between BMI and CHD prevalence, aligning with medical research that identifies obesity as a significant risk factor for cardiovascular diseases. The findings underscore the importance of BMI management in reducing cardiovascular disease risks. Despite challenges such as potential class imbalances in CHD-positive cases, mitigated through stratified splits, the study produced reliable insights. Future work could extend these findings by using larger datasets or incorporating longitudinal data to explore temporal trends.")
+    st.write("In conclusion, this research validated the hypothesis that BMI is correlated with the prevalence of CHD, with advanced models like Random Forest and Neural Network providing strong predictive evidence. These results highlight the critical role of BMI in cardiovascular health, offering practical implications for preventive strategies.")
 
 
 
