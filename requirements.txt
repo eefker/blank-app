@@ -7,3 +7,6 @@ ipywidgets
 numpy
 streamlit-option-menu
 snowflake-connector-python
+shap
+tensorflow
+statsmodel
