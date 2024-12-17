@@ -22,12 +22,14 @@ with st.sidebar:
     
 if selected == "Introduction":
     st.title('Introduction')
-   # Corrected URL for the raw CSV file
+    #Corrected URL for the raw CSV file
     url = 'https://raw.githubusercontent.com/LUCE-Blockchain/Databases-for-teaching/main/Framingham%20Dataset.csv'
     #allow all the columns to be visible
     pd.set_option('display.max_columns', None)
     # Read the CSV file from the URL
     df = pd.read_csv(url)
+    #Description of the Framingham Heart Study
+    #st.subheader("About the Framingham Heart Study")
     st.write("For this project we used a subset of the data collected from the Framingham Heart Study.")
     st.write("This study was the first prospective study of cardiovascular disease and identified the concept of risk factors and their joint effects. The population consisted of free-living subjects in the community of Framingham, Massachusetts ")
     st.write("The subset that we use contained information from the first round of physical examinations, as the original study contains information from 3 generations: first, second and third generation of participants")
@@ -36,7 +38,48 @@ if selected == "Introduction":
     st.write("The dataset was provided for teaching purpose and was provided with permission from the National Heart, Lung and Blood Institute (NHLBI) (No. N01-HC-25195)")
     st.image("https://avatars.githubusercontent.com/u/4061889?s=280&v=4", width=100)
     st.write("reference: Hong Y. Framingham Heart Study (FHS) | National Heart, Lung, and Blood Institute (NHLBI) [Internet]. Nih.gov. 2018. Available from: https://www.nhlbi.nih.gov/science/framingham-heart-study-fhs")
-   
+
+
+    # Research question
+    st.subheader("Research Question")
+    st.write("Does Body Mass Index (BMI) influence the prevalence of coronary heart disease (CHD)?")
+
+    # Quiz Section
+    st.subheader("Quiz: Correlation between BMI and CHD")
+    st.write("Answer the following questions to test your knowledge:")
+
+    # Questions and answers
+    questions = [
+        {"question": "Does a higher BMI increase the risk of CHD?", "answer": "Yes"},
+        {"question": "Is BMI the only factor influencing CHD?", "answer": "No"},
+        {"question": "Can lifestyle changes reduce BMI and CHD risk?", "answer": "Yes"},
+        {"question": "Is BMI below 18.5 considered healthy?", "answer": "No"},
+        {"question": "Does obesity (BMI > 30) strongly correlate with CHD?", "answer": "Yes"}
+        ]
+
+    user_answers = []
+    score = 0
+
+    # Render questions
+    for i, q in enumerate(questions):
+        col1, col2 = st.columns([4, 1])
+        with col1:
+            user_answer = st.radio(f"{q['question']}", ["Yes", "No"], key=f"q{i}")
+            user_answers.append(user_answer)
+        with col2:
+            if user_answer == q["answer"]:
+                st.success("✔")
+            elif user_answer != "":
+                st.error("✘")
+
+    # Calculate score after all questions are answered
+    if st.button("Submit Quiz"):
+        for i, q in enumerate(questions):
+            if user_answers[i] == q["answer"]:
+                score += 1
+        result = (score / len(questions)) * 100
+        st.write(f"Your score: {result}%")
+
 
 if selected == "Data preparation":
     st.title("Data preparation")
@@ -94,6 +137,47 @@ if selected == "Data preparation":
         ax.set_yticklabels(ax.get_yticklabels(), fontsize=12, rotation=0)
         st.pyplot(fig)
     
+    st.write("Scatter Plot: BMI vs. Age Colored by CHD Status")
+    plt.figure(figsize=(8, 6))
+    sns.scatterplot(data=df_relevant, x='AGE', y='BMI', hue='ANYCHD', palette='Set1')
+    plt.title('BMI vs. Age by CHD Status')
+    plt.xlabel('Age')
+    plt.ylabel('BMI')
+    plt.legend(title='CHD Status (0 = No, 1 = Yes)', loc='upper right')
+    st.pyplot(plt)
+
+    # Categorize BMI
+    df_relevant['BMI_Category'] = pd.cut(
+        df_relevant['BMI'],
+        bins=[0, 18.5, 25, 30, 60],
+        labels=['Underweight', 'Normal', 'Overweight', 'Obese']
+    )
+
+# Add interactivity: Allow user to select BMI category
+selected_category = st.selectbox(
+   "Select a BMI Category to filter:",
+   ['All', 'Underweight', 'Normal', 'Overweight', 'Obese']
+)
+
+# Filter the data based on the selected category
+if selected_category != 'All':
+   filtered_data = df_relevant[df_relevant['BMI_Category'] == selected_category]
+else:
+   filtered_data = df_relevant
+
+# Bar Plot: CHD Prevalence by BMI Category
+st.write("Interactive Bar Plot: CHD Prevalence by BMI Category")
+
+chd_counts = filtered_data.groupby('BMI_Category')['ANYCHD'].mean().reset_index()
+
+plt.figure(figsize=(8, 6))
+sns.barplot(x='BMI_Category', y='ANYCHD', data=chd_counts, palette='Blues_d')
+plt.title('CHD Prevalence by BMI Category')
+plt.xlabel('BMI Category')
+plt.ylabel('CHD Prevalence (Proportion)')
+st.pyplot(plt)
+
+
 
 
 
