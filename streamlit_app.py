@@ -137,6 +137,7 @@ if selected == "Data preparation":
         ax.set_yticklabels(ax.get_yticklabels(), fontsize=12, rotation=0)
         st.pyplot(fig)
     
+    df_relevant=df_rq.copy
     st.write("Scatter Plot: BMI vs. Age Colored by CHD Status")
     plt.figure(figsize=(8, 6))
     sns.scatterplot(data=df_relevant, x='AGE', y='BMI', hue='ANYCHD', palette='Set1')
@@ -153,29 +154,29 @@ if selected == "Data preparation":
         labels=['Underweight', 'Normal', 'Overweight', 'Obese']
     )
 
-# Add interactivity: Allow user to select BMI category
-selected_category = st.selectbox(
-   "Select a BMI Category to filter:",
-   ['All', 'Underweight', 'Normal', 'Overweight', 'Obese']
-)
+    # Add interactivity: Allow user to select BMI category
+    selected_category = st.selectbox(
+        "Select a BMI Category to filter:",
+        ['All', 'Underweight', 'Normal', 'Overweight', 'Obese']
+        )
 
-# Filter the data based on the selected category
-if selected_category != 'All':
-   filtered_data = df_relevant[df_relevant['BMI_Category'] == selected_category]
-else:
-   filtered_data = df_relevant
+    # Filter the data based on the selected category
+    if selected_category != 'All':
+        filtered_data = df_relevant[df_relevant['BMI_Category'] == selected_category]
+    else:
+        filtered_data = df_relevant
 
-# Bar Plot: CHD Prevalence by BMI Category
-st.write("Interactive Bar Plot: CHD Prevalence by BMI Category")
+    # Bar Plot: CHD Prevalence by BMI Category
+    st.write("Interactive Bar Plot: CHD Prevalence by BMI Category")
 
-chd_counts = filtered_data.groupby('BMI_Category')['ANYCHD'].mean().reset_index()
+    chd_counts = filtered_data.groupby('BMI_Category')['ANYCHD'].mean().reset_index()
 
-plt.figure(figsize=(8, 6))
-sns.barplot(x='BMI_Category', y='ANYCHD', data=chd_counts, palette='Blues_d')
-plt.title('CHD Prevalence by BMI Category')
-plt.xlabel('BMI Category')
-plt.ylabel('CHD Prevalence (Proportion)')
-st.pyplot(plt)
+    plt.figure(figsize=(8, 6))
+    sns.barplot(x='BMI_Category', y='ANYCHD', data=chd_counts, palette='Blues_d')
+    plt.title('CHD Prevalence by BMI Category')
+    plt.xlabel('BMI Category')
+    plt.ylabel('CHD Prevalence (Proportion)')
+    st.pyplot(plt)
 
 
 
@@ -638,7 +639,133 @@ if selected == "Data Analysis":
     df_rqi = df_imputed.copy()
     df_rqi[selected_columns] = imputer.fit_transform(df_rqi[selected_columns])
 
+    # Feature Engineering
+    # Binary encoding for SEX (1 = Male, 2 = Female -> 0 = Female, 1 = Male)
+    df_rqi['SEX_BINARY'] = df_rqi['SEX'].apply(lambda x: 1 if x == 1 else 0)
 
+    # BMI Categorization
+    df_rqi['BMI_Category'] = pd.cut(
+        df_rqi['BMI'],
+        bins=[0, 18.5, 25, 30, float('inf')],
+        labels=['Underweight', 'Normal', 'Overweight', 'Obese']
+    )
+
+    # One-Hot Encoding for BMI_Category
+    df_rqi = pd.get_dummies(df_rqi, columns=['BMI_Category'], drop_first=True)
+
+
+    # Splitting Data into Features (X) and Target (y)
+    X = df_rqi.drop(columns=['ANYCHD'])  # Exclude the target variable
+    y = df_rqi['ANYCHD']  # Target variable
+    # Train-Test Split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+    print(f"Training Set: {X_train.shape}, Test Set: {X_test.shape}")
+    
+    import ipywidgets as widgets
+    from IPython.display import display, clear_output
+
+    # Mock Data: Replace with your actual model names and metrics
+    model_options = ['Logistic Regression', 'Random Forest', 'SVM', 'KNN', 'Neural Network']
+    metric_options = ['Accuracy', 'Precision', 'Recall', 'F1-Score', 'ROC-AUC']
+
+    # Tuned models
+    knn_tuned_options = ['KNN (k=5)', 'KNN (k=7)', 'KNN (k=10)']
+    nn_tuned_options = ['NN (1 hidden layer)', 'NN (2 hidden layers)', 'NN (Dropout)']
+
+    # Widgets
+    dropdown_model = widgets.Dropdown(
+        options=model_options,
+        value=model_options[0],
+        description='Model:',
+    )
+
+    dropdown_metric = widgets.Dropdown(
+        options=metric_options,
+        value=metric_options[0],
+        description='Metric:',
+    )
+
+    dropdown_tuned = widgets.Dropdown(
+        options=[],
+        value=None,
+    description='Tuned:',
+    )
+
+    output = widgets.Output()
+
+    # Model implementations
+    def logistic_regression():
+        def build_model(hp):
+            model = Sequential()
+            model.add(Input(shape=(X_train.shape[1],)))  # Input layer
+            print("Running Logistic Regression model...")
+
+    def random_forest():
+        print("Running Random Forest model... (Code not found in uploaded file)")
+
+    def svm():
+        def build_model(hp):
+            model = Sequential()
+            model.add(Input(shape=(X_train.shape[1],)))  # Input layer
+            print("Running Support Vector Machine model...")
+
+    def knn():
+        def build_model(hp):
+            model = Sequential()
+            model.add(Input(shape=(X_train.shape[1],)))  # Input layer
+            print("Running K-Nearest Neighbors model...")
+
+    def neural_network():
+        print("Running Neural Network model... (Code not found in uploaded file)")
+
+    model_functions = {
+        'Logistic Regression': logistic_regression,
+        'Random Forest': random_forest,
+        'SVM': svm,
+        'KNN': knn,
+        'Neural Network': neural_network,
+    }
+
+    def update_tuned_dropdown(model):
+        """Update the tuned dropdown based on the selected model."""
+        if model == 'KNN':
+            dropdown_tuned.options = knn_tuned_options
+            dropdown_tuned.value = knn_tuned_options[0]
+        elif model == 'Neural Network':
+            dropdown_tuned.options = nn_tuned_options
+            dropdown_tuned.value = nn_tuned_options[0]
+        else:
+            dropdown_tuned.options = []
+            dropdown_tuned.value = None
+
+    def on_model_change(change):
+        """Handle model dropdown change."""
+        if change['type'] == 'change' and change['name'] == 'value':
+            update_tuned_dropdown(change['new'])
+            display_output()
+
+    def display_output():
+        """Display the selected values in the output widget."""
+        with output:
+            clear_output(wait=True)
+            print(f"Selected Model: {dropdown_model.value}")
+            print(f"Selected Metric: {dropdown_metric.value}")
+            if dropdown_tuned.value:
+                print(f"Tuned Option: {dropdown_tuned.value}")
+            # Run the selected model
+            model_func = model_functions.get(dropdown_model.value)
+            if model_func:
+                model_func()
+
+    # Event Listeners
+    dropdown_model.observe(on_model_change)
+
+    # Initialize tuned dropdown
+    dropdown_tuned.options = []
+
+    display(widgets.VBox([dropdown_model, dropdown_metric, dropdown_tuned, output]))
+    update_tuned_dropdown(dropdown_model.value)
 
 
 
